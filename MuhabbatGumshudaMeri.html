@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ur">
 <head>
@@ -9,7 +10,7 @@
             --pink: #ff416c;
             --dark-bg: #000;
             --card-bg: #1a1a1a;
-            --header-height: 170px; /* Aapki request ke mutabiq height 170px */
+            --header-height: 170px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -30,7 +31,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center 20%; /* Thora upar focus rakha hai taake faces dikhen */
+            object-position: center 20%;
             opacity: 0.6;
         }
 
@@ -64,7 +65,6 @@
             padding-left: 12px; margin: 20px 0; text-align: left;
         }
 
-        /* Rest of the styles (Grid, Player, etc.) remain unchanged */
         .episode-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -118,7 +118,7 @@
         .yt-iframe-wrapper {
             position: absolute;
             top: -50px; left: 0; width: 100%; height: calc(100% + 120px); 
-            z-index: 1; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+            z-index: 1; opacity: 0; transition: opacity 0.3s ease; pointer-events: auto;
         }
         
         .yt-iframe-wrapper.active { opacity: 1; }
@@ -171,7 +171,7 @@
 
         @media (min-width: 768px) { 
             .episode-grid { grid-template-columns: repeat(4, 1fr); }
-            :root { --header-height: 300px; } /* Desktop ke liye thori zyada height */
+            :root { --header-height: 300px; }
         }
     </style>
 </head>
@@ -201,7 +201,7 @@
             </div>
             <div class="buffering-screen" id="bufferingScreen">
                 <div class="buffering-spinner"></div>
-                <div style="color:var(--pink)">Buffring...</div>
+                <div style="color:var(--pink)">Loading...</div>
             </div>
             <button class="close-player-btn" onclick="closePlayer()">✕</button>
             <div style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:5;" onclick="toggleUI()"></div>
@@ -227,7 +227,7 @@
         const PLAYLIST_ID = 'PLbVdwtmx18svm9hCyqFrO-DRKz49Jjo2w';
         const EPISODE_COUNT = 26;
 
-        let player, currentIdx = 0, hideTimeout;
+        let player, currentIdx = 0, hideTimeout, safetyTimeout;
 
         function renderEpisodeButtons() {
             const grid = document.getElementById('episodeGrid');
@@ -252,7 +252,17 @@
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('youtube-player', {
-                playerVars: { 'listType': 'playlist', 'list': PLAYLIST_ID, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'disablekb': 1, 'showinfo': 0, 'iv_load_policy': 3, 'playsinline': 1 },
+                playerVars: { 
+                    'listType': 'playlist', 
+                    'list': PLAYLIST_ID, 
+                    'controls': 0, 
+                    'modestbranding': 1, 
+                    'rel': 0, 
+                    'disablekb': 1, 
+                    'showinfo': 0, 
+                    'iv_load_policy': 3, 
+                    'playsinline': 1 
+                },
                 events: { 'onStateChange': onStateChange }
             });
             setInterval(updateProgress, 500);
@@ -262,27 +272,52 @@
             const el = document.getElementById('playerArea');
             el.classList.toggle('show-ui');
             clearTimeout(hideTimeout);
-            if(el.classList.contains('show-ui')) { hideTimeout = setTimeout(() => el.classList.remove('show-ui'), 4000); }
+            if(el.classList.contains('show-ui')) { 
+                hideTimeout = setTimeout(() => el.classList.remove('show-ui'), 4000); 
+            }
         }
 
         function openPlayer(i) {
             currentIdx = i;
             document.getElementById('playerBox').style.display = 'flex';
             document.getElementById('bufferingScreen').style.display = 'flex';
-            if (player && player.loadPlaylist) { player.loadPlaylist({ list: PLAYLIST_ID, listType: 'playlist', index: i }); }
+            
+            if (player && player.loadPlaylist) { 
+                player.loadPlaylist({ list: PLAYLIST_ID, listType: 'playlist', index: i }); 
+            }
+            
             document.getElementById('playerArea').classList.add('show-ui');
+
+            // Safety Backup: 6 seconds baad loader lazmi hata do agar ad atak jaye
+            clearTimeout(safetyTimeout);
+            safetyTimeout = setTimeout(() => {
+                hideLoader();
+            }, 6000);
+        }
+
+        function hideLoader() {
+            document.getElementById('bufferingScreen').style.display = 'none';
+            document.getElementById('videoPreview').style.display = 'none';
+            document.getElementById('ytWrapper').classList.add('active');
         }
 
         function onStateChange(event) {
-            if (event.data === 1) { 
-                document.getElementById('bufferingScreen').style.display = 'none';
-                document.getElementById('videoPreview').style.display = 'none';
-                document.getElementById('ytWrapper').classList.add('active');
-                document.getElementById('playIcon').innerText = '⏸';
-            } else if (event.data === 2) { document.getElementById('playIcon').innerText = '▶'; }
+            // State 1: Playing, State 3: Buffering, State -1: Unstarted (Ads start here)
+            if (event.data === 1 || event.data === 3 || event.data === -1) { 
+                hideLoader();
+                if (event.data === 1) {
+                    document.getElementById('playIcon').innerText = '⏸';
+                }
+            } else if (event.data === 2) { 
+                document.getElementById('playIcon').innerText = '▶'; 
+            }
         }
 
-        function playPause() { if (player.getPlayerState() === 1) player.pauseVideo(); else player.playVideo(); }
+        function playPause() { 
+            if (player.getPlayerState() === 1) player.pauseVideo(); 
+            else player.playVideo(); 
+        }
+
         function updateProgress() {
             if (player && player.getCurrentTime) {
                 const curr = player.getCurrentTime(); const dur = player.getDuration();
@@ -293,15 +328,37 @@
                 }
             }
         }
-        function format(s) { let m = Math.floor(s/60), sec = Math.floor(s%60); return m + ":" + (sec < 10 ? '0' : '') + sec; }
-        function seek(e) { const rect = document.getElementById('progressBar').getBoundingClientRect(); const pct = (e.clientX - rect.left) / rect.width; player.seekTo(pct * player.getDuration()); }
-        function closePlayer() { document.getElementById('playerBox').style.display = 'none'; player.stopVideo(); }
+
+        function format(s) { 
+            let m = Math.floor(s/60), sec = Math.floor(s%60); 
+            return m + ":" + (sec < 10 ? '0' : '') + sec; 
+        }
+
+        function seek(e) { 
+            const rect = document.getElementById('progressBar').getBoundingClientRect(); 
+            const pct = (e.clientX - rect.left) / rect.width; 
+            player.seekTo(pct * player.getDuration()); 
+        }
+
+        function closePlayer() { 
+            document.getElementById('playerBox').style.display = 'none'; 
+            player.stopVideo(); 
+        }
+
         function nextEp() { if(currentIdx < EPISODE_COUNT-1) openPlayer(currentIdx+1); }
         function prevEp() { if(currentIdx > 0) openPlayer(currentIdx-1); }
+
         function toggleFullscreen() {
             const el = document.getElementById('playerArea');
-            if (!document.fullscreenElement) { el.requestFullscreen().then(() => { if (screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(e => console.log(e)); } }); } 
-            else { document.exitFullscreen(); }
+            if (!document.fullscreenElement) { 
+                el.requestFullscreen().then(() => { 
+                    if (screen.orientation && screen.orientation.lock) { 
+                        screen.orientation.lock('landscape').catch(e => console.log(e)); 
+                    } 
+                }); 
+            } else { 
+                document.exitFullscreen(); 
+            }
         }
     </script>
 </body>
