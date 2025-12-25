@@ -116,7 +116,7 @@
         .yt-iframe-wrapper {
             position: absolute;
             top: -50px; left: 0; width: 100%; height: calc(100% + 120px); 
-            z-index: 1; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+            z-index: 1; opacity: 0; transition: opacity 0.3s ease; pointer-events: auto;
         }
         
         .yt-iframe-wrapper.active { opacity: 1; }
@@ -199,7 +199,7 @@
             </div>
             <div class="buffering-screen" id="bufferingScreen">
                 <div class="buffering-spinner"></div>
-                <div style="color:var(--pink)">Buffring...</div>
+                <div style="color:var(--pink)">Loading...</div>
             </div>
             <button class="close-player-btn" onclick="closePlayer()">✕</button>
             <div style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:5;" onclick="toggleUI()"></div>
@@ -235,10 +235,7 @@
                 card.className = 'ep-card';
                 card.style.animationDelay = (i * 0.05) + 's';
                 card.onclick = () => openPlayer(i);
-                
-                // TARTEEB FIX: i (0) se shuru hota hai, is liye i+1 kiya taake Ep 1 se shuru ho
                 const displayNum = i + 1; 
-                
                 card.innerHTML = `<div class="ep-upper"><img src="${CUSTOM_THUMBNAIL}"></div><div class="ep-lower"><h3>Episode ${displayNum}</h3></div>`;
                 grid.appendChild(card);
             }
@@ -272,15 +269,32 @@
             document.getElementById('bufferingScreen').style.display = 'flex';
             if (player && player.loadPlaylist) { player.loadPlaylist({ list: PLAYLIST_ID, listType: 'playlist', index: i }); }
             document.getElementById('playerArea').classList.add('show-ui');
+            
+            // Safety Check: Agar 5 second tak API state change na ho (ads load ho rahe hon), tab bhi loader hata do.
+            setTimeout(() => {
+                if(document.getElementById('bufferingScreen').style.display !== 'none') {
+                    removeLoader();
+                }
+            }, 5000);
+        }
+
+        // Loader hatane ka function
+        function removeLoader() {
+            document.getElementById('bufferingScreen').style.display = 'none';
+            document.getElementById('videoPreview').style.display = 'none';
+            document.getElementById('ytWrapper').classList.add('active');
         }
 
         function onStateChange(event) {
-            if (event.data === 1) { 
-                document.getElementById('bufferingScreen').style.display = 'none';
-                document.getElementById('videoPreview').style.display = 'none';
-                document.getElementById('ytWrapper').classList.add('active');
-                document.getElementById('playIcon').innerText = '⏸';
-            } else if (event.data === 2) { document.getElementById('playIcon').innerText = '▶'; }
+            // State -1 means Unstarted (Aksar ads isi state me show hote hain)
+            // State 1 means Playing
+            // State 3 means Buffering
+            if (event.data === 1 || event.data === -1 || event.data === 3) { 
+                removeLoader();
+                if(event.data === 1) document.getElementById('playIcon').innerText = '⏸';
+            } else if (event.data === 2) { 
+                document.getElementById('playIcon').innerText = '▶'; 
+            }
         }
 
         function playPause() { if (player.getPlayerState() === 1) player.pauseVideo(); else player.playVideo(); }
