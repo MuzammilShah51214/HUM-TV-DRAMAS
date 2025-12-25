@@ -9,58 +9,48 @@
             --pink: #ff416c;
             --dark-bg: #000;
             --card-bg: #1a1a1a;
-            --header-height: 170px;
+            --header-height: 250px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; text-align: center;}
+        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; text-align: center; }
 
-        .hero-poster {
+        /* Header Styles */
+        header {
             position: fixed;
             top: 0; left: 0; width: 100%;
             height: var(--header-height);
             z-index: 1000;
             background: #000;
-            border-bottom: 2px solid var(--pink);
+            border-bottom: 3px solid var(--pink);
             overflow: hidden;
         }
 
-        .hero-poster img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 20%;
-            opacity: 0.6;
+        .poster-img { 
+            width: 100%; height: 180px; object-fit: cover; 
+            display: block; opacity: 0.6;
         }
 
-        .poster-overlay {
+        .header-overlay {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            padding: 10px;
+            background: linear-gradient(transparent, #000);
+            padding: 15px;
         }
 
-        .poster-overlay h1 { 
-            font-size: 1.1rem; 
-            letter-spacing: 1px; 
-            text-transform: uppercase;
-        }
-        
-        .poster-overlay p { 
-            font-size: 12px; 
-            color: var(--pink); 
-            font-weight: bold; 
-        }
+        .header-overlay h1 { font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; }
+        .header-overlay p { font-size: 13px; color: var(--pink); font-weight: bold; }
 
+        /* Container & Grid */
         .container { 
             padding: 15px; max-width: 1100px; 
-            margin: calc(var(--header-height) + 10px) auto 0 auto; 
+            margin: calc(var(--header-height) + 20px) auto 0 auto; 
         }
 
         .section-title {
-            font-size: 20px; font-weight: bold;
+            font-size: 22px; font-weight: bold;
             border-left: 4px solid var(--pink);
-            padding-left: 12px; margin: 20px 0; text-align: left;
+            padding-left: 12px; margin: 25px 0; text-align: left;
         }
 
         .episode-grid {
@@ -86,7 +76,7 @@
         }
         .ep-card:hover { border-color: var(--pink); transform: translateY(-5px); }
 
-        .ep-upper { width: 100%; height: 80px; aspect-ratio: 16/9; overflow: hidden; background: #222; }
+        .ep-upper { width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #222; }
         .ep-upper img { width: 100%; height: 100%; object-fit: cover; }
 
         .ep-lower {
@@ -95,6 +85,7 @@
         }
         .ep-lower h3 { color: var(--pink); font-size: 13px; text-transform: uppercase; }
 
+        /* --- Updated Premium Player Box --- */
         .player-box {
             display: none;
             position: fixed;
@@ -113,10 +104,11 @@
             overflow: hidden;
         }
         
+        /* YouTube Wrapper with Offset to hide controls */
         .yt-iframe-wrapper {
             position: absolute;
             top: -50px; left: 0; width: 100%; height: calc(100% + 120px); 
-            z-index: 1; opacity: 0; transition: opacity 0.3s ease; pointer-events: auto;
+            z-index: 1; opacity: 0; transition: opacity 0.3s ease;
         }
         
         .yt-iframe-wrapper.active { opacity: 1; }
@@ -136,13 +128,14 @@
         }
         
         .buffering-spinner {
-            width: 70px; height: 70px; border: 4px solid rgba(255, 65, 108, 0.2);
+            width: 60px; height: 60px; border: 4px solid rgba(255, 65, 108, 0.2);
             border-radius: 50%; border-top-color: var(--pink); animation: spin 1s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         @keyframes spin { to { transform: rotate(360deg); } }
         
+        /* Player Controls UI */
         .bottom-ui { 
             position: absolute; bottom: 0; left: 0; right: 0;
             background: rgba(0,0,0,0.9); padding: 15px; backdrop-filter: blur(15px);
@@ -150,6 +143,7 @@
         }
         
         .player-content.show-ui .bottom-ui { opacity: 1; pointer-events: auto; }
+        
         .p-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); cursor: pointer; border-radius: 10px; margin-bottom: 12px; }
         .p-fill { height: 100%; background: linear-gradient(90deg, #ff416c, #ff4b2b); width: 0%; border-radius: 10px; }
         
@@ -169,19 +163,20 @@
 
         @media (min-width: 768px) { 
             .episode-grid { grid-template-columns: repeat(4, 1fr); }
-            :root { --header-height: 300px; }
+            :root { --header-height: 350px; }
+            .poster-img { height: 280px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="hero-poster">
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScOYWWXi5SyWr2fns4mllU9HajSolOr4c2WQ-AI4ko0uS5kHnpcjH3phA&s=10" alt="Main Poster">
-        <div class="poster-overlay">
-            <h1>Do Kinaray</h1>
-            <p>GREEN ENT TV HD Serial • Premium Player</p>
+    <header>
+        <img src="https://upload.wikimedia.org/wikipedia/en/9/9d/Tashan-e-Ishq_title_card.jpg" class="poster-img">
+        <div class="header-overlay">
+            <h1>TASHAN E ISHQ</h1>
+            <p>ZEE TV HD Serial • Premium Player</p>
         </div>
-    </div>
+    </header>
 
     <div class="container">
         <h2 class="section-title">Select Episode</h2>
@@ -194,15 +189,20 @@
             <div class="yt-iframe-wrapper" id="ytWrapper">
                 <div id="youtube-player"></div>
             </div>
+            
             <div class="video-preview" id="videoPreview">
                 <img src="https://upload.wikimedia.org/wikipedia/en/9/9d/Tashan-e-Ishq_title_card.jpg">
             </div>
+
             <div class="buffering-screen" id="bufferingScreen">
                 <div class="buffering-spinner"></div>
-                <div style="color:var(--pink)">Loading...</div>
+                <div style="color:var(--pink)">Loading Episode...</div>
             </div>
+
             <button class="close-player-btn" onclick="closePlayer()">✕</button>
+            
             <div style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:5;" onclick="toggleUI()"></div>
+
             <div class="bottom-ui">
                 <div class="p-bar" id="progressBar" onclick="seek(event)">
                     <div class="p-fill" id="pFill"></div>
@@ -221,24 +221,27 @@
     </div>
 
     <script>
-        const CUSTOM_THUMBNAIL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcScOYWWXi5SyWr2fns4mllU9HajSolOr4c2WQ-AI4ko0uS5kHnpcjH3phA&s=10";
-        const PLAYLIST_ID = 'PLs2CG9JU32b7kNGvHqlW5c1fJcqbDYmgU';
-        const EPISODE_COUNT = 65;
+        const CUSTOM_THUMBNAIL = "https://upload.wikimedia.org/wikipedia/en/9/9d/Tashan-e-Ishq_title_card.jpg";
+        
+        // Aapki pehli wali episodes list
+        const EPISODES = [
+            { id: "XU1xccZ957k", title: "Episode 289" },
+            { id: "VWaYYTBPWP0", title: "Episode 290" }
+        ];
 
         let player, currentIdx = 0, hideTimeout;
 
         function renderEpisodeButtons() {
             const grid = document.getElementById('episodeGrid');
             grid.innerHTML = ''; 
-            for (let i = 0; i < EPISODE_COUNT; i++) {
+            EPISODES.forEach((ep, i) => {
                 const card = document.createElement('div');
                 card.className = 'ep-card';
-                card.style.animationDelay = (i * 0.05) + 's';
+                card.style.animationDelay = (i * 0.1) + 's';
                 card.onclick = () => openPlayer(i);
-                const displayNum = i + 1; 
-                card.innerHTML = `<div class="ep-upper"><img src="${CUSTOM_THUMBNAIL}"></div><div class="ep-lower"><h3>Episode ${displayNum}</h3></div>`;
+                card.innerHTML = `<div class="ep-upper"><img src="${CUSTOM_THUMBNAIL}"></div><div class="ep-lower"><h3>${ep.title}</h3></div>`;
                 grid.appendChild(card);
-            }
+            });
         }
 
         window.onload = () => {
@@ -250,7 +253,15 @@
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('youtube-player', {
-                playerVars: { 'listType': 'playlist', 'list': PLAYLIST_ID, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'disablekb': 1, 'showinfo': 0, 'iv_load_policy': 3, 'playsinline': 1 },
+                playerVars: { 
+                    'controls': 0, 
+                    'modestbranding': 1, 
+                    'rel': 0, 
+                    'disablekb': 1, 
+                    'showinfo': 0, 
+                    'iv_load_policy': 3, 
+                    'playsinline': 1 
+                },
                 events: { 'onStateChange': onStateChange }
             });
             setInterval(updateProgress, 500);
@@ -260,17 +271,24 @@
             const el = document.getElementById('playerArea');
             el.classList.toggle('show-ui');
             clearTimeout(hideTimeout);
-            if(el.classList.contains('show-ui')) { hideTimeout = setTimeout(() => el.classList.remove('show-ui'), 4000); }
+            if(el.classList.contains('show-ui')) { 
+                hideTimeout = setTimeout(() => el.classList.remove('show-ui'), 4000); 
+            }
         }
 
         function openPlayer(i) {
             currentIdx = i;
             document.getElementById('playerBox').style.display = 'flex';
             document.getElementById('bufferingScreen').style.display = 'flex';
-            if (player && player.loadPlaylist) { player.loadPlaylist({ list: PLAYLIST_ID, listType: 'playlist', index: i }); }
+            document.getElementById('videoPreview').style.display = 'flex';
+            
+            if (player && player.loadVideoById) { 
+                player.loadVideoById(EPISODES[i].id); 
+            }
+            
             document.getElementById('playerArea').classList.add('show-ui');
             
-            // Safety Check: Agar 5 second tak API state change na ho (ads load ho rahe hon), tab bhi loader hata do.
+            // Auto-hide loader fallback
             setTimeout(() => {
                 if(document.getElementById('bufferingScreen').style.display !== 'none') {
                     removeLoader();
@@ -278,7 +296,6 @@
             }, 5000);
         }
 
-        // Loader hatane ka function
         function removeLoader() {
             document.getElementById('bufferingScreen').style.display = 'none';
             document.getElementById('videoPreview').style.display = 'none';
@@ -286,21 +303,25 @@
         }
 
         function onStateChange(event) {
-            // State -1 means Unstarted (Aksar ads isi state me show hote hain)
-            // State 1 means Playing
-            // State 3 means Buffering
             if (event.data === 1 || event.data === -1 || event.data === 3) { 
                 removeLoader();
                 if(event.data === 1) document.getElementById('playIcon').innerText = '⏸';
             } else if (event.data === 2) { 
                 document.getElementById('playIcon').innerText = '▶'; 
+            } else if (event.data === 0) {
+                nextEp();
             }
         }
 
-        function playPause() { if (player.getPlayerState() === 1) player.pauseVideo(); else player.playVideo(); }
+        function playPause() { 
+            if (player.getPlayerState() === 1) player.pauseVideo(); 
+            else player.playVideo(); 
+        }
+
         function updateProgress() {
             if (player && player.getCurrentTime) {
-                const curr = player.getCurrentTime(); const dur = player.getDuration();
+                const curr = player.getCurrentTime(); 
+                const dur = player.getDuration();
                 if (dur > 0) {
                     document.getElementById('pFill').style.width = (curr/dur*100) + '%';
                     document.getElementById('currTime').innerText = format(curr);
@@ -308,15 +329,38 @@
                 }
             }
         }
-        function format(s) { let m = Math.floor(s/60), sec = Math.floor(s%60); return m + ":" + (sec < 10 ? '0' : '') + sec; }
-        function seek(e) { const rect = document.getElementById('progressBar').getBoundingClientRect(); const pct = (e.clientX - rect.left) / rect.width; player.seekTo(pct * player.getDuration()); }
-        function closePlayer() { document.getElementById('playerBox').style.display = 'none'; player.stopVideo(); }
-        function nextEp() { if(currentIdx < EPISODE_COUNT-1) openPlayer(currentIdx+1); }
-        function prevEp() { if(currentIdx > 0) openPlayer(currentIdx-1); }
+
+        function format(s) { 
+            let m = Math.floor(s/60), sec = Math.floor(s%60); 
+            return m + ":" + (sec < 10 ? '0' : '') + sec; 
+        }
+
+        function seek(e) { 
+            const rect = document.getElementById('progressBar').getBoundingClientRect(); 
+            const pct = (e.clientX - rect.left) / rect.width; 
+            player.seekTo(pct * player.getDuration()); 
+        }
+
+        function closePlayer() { 
+            document.getElementById('playerBox').style.display = 'none'; 
+            player.stopVideo(); 
+            document.getElementById('ytWrapper').classList.remove('active');
+        }
+
+        function nextEp() { if(currentIdx < EPISODES.length - 1) openPlayer(currentIdx + 1); }
+        function prevEp() { if(currentIdx > 0) openPlayer(currentIdx - 1); }
+
         function toggleFullscreen() {
             const el = document.getElementById('playerArea');
-            if (!document.fullscreenElement) { el.requestFullscreen().then(() => { if (screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(e => console.log(e)); } }); } 
-            else { document.exitFullscreen(); }
+            if (!document.fullscreenElement) { 
+                el.requestFullscreen().then(() => { 
+                    if (screen.orientation && screen.orientation.lock) { 
+                        screen.orientation.lock('landscape').catch(e => console.log(e)); 
+                    } 
+                }); 
+            } else { 
+                document.exitFullscreen(); 
+            }
         }
     </script>
 </body>
