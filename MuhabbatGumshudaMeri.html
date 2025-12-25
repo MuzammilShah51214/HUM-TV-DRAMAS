@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sukoon - Premium Player</title>
+    <style>
+        :root {
+            --pink: #ff416c;
+            --dark-bg: #000;
+            --card-bg: #1a1a1a;
+            --header-height: 170px; /* Aapki request ke mutabiq height 170px */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--dark-bg); color: white; overflow-x: hidden; text-align: center;}
+
+        /* Stylish Fixed Poster Section */
+        .hero-poster {
+            position: fixed;
+            top: 0; left: 0; width: 100%;
+            height: var(--header-height);
+            z-index: 1000;
+            background: #000;
+            border-bottom: 2px solid var(--pink);
+            overflow: hidden;
+        }
+
+        .hero-poster img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%; /* Thora upar focus rakha hai taake faces dikhen */
+            opacity: 0.6;
+        }
+
+        .poster-overlay {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 10px;
+        }
+
+        .poster-overlay h1 { 
+            font-size: 1.1rem; 
+            letter-spacing: 1px; 
+            text-transform: uppercase;
+        }
+        
+        .poster-overlay p { 
+            font-size: 12px; 
+            color: var(--pink); 
+            font-weight: bold; 
+        }
+
+        .container { 
+            padding: 15px; max-width: 1100px; 
+            margin: calc(var(--header-height) + 10px) auto 0 auto; 
+        }
+
+        .section-title {
+            font-size: 20px; font-weight: bold;
+            border-left: 4px solid var(--pink);
+            padding-left: 12px; margin: 20px 0; text-align: left;
+        }
+
+        /* Rest of the styles (Grid, Player, etc.) remain unchanged */
+        .episode-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ep-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            opacity: 0; 
+            animation: fadeInUp 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            border: 1px solid #222;
+            transition: 0.3s;
+        }
+        .ep-card:hover { border-color: var(--pink); transform: translateY(-5px); }
+
+        .ep-upper { width: 100%; height: 80px; aspect-ratio: 16/9; overflow: hidden; background: #222; }
+        .ep-upper img { width: 100%; height: 100%; object-fit: cover; }
+
+        .ep-lower {
+            background: #111; padding: 12px;
+            text-align: center; border-top: 1px solid #222;
+        }
+        .ep-lower h3 { color: var(--pink); font-size: 13px; text-transform: uppercase; }
+
+        .player-box {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 10001;
+            align-items: center; justify-content: center;
+        }
+        
+        .player-content { 
+            width: 100%; 
+            max-width: 900px; 
+            position: relative; 
+            background: #000;
+            aspect-ratio: 16/9;
+            overflow: hidden;
+        }
+        
+        .yt-iframe-wrapper {
+            position: absolute;
+            top: -50px; left: 0; width: 100%; height: calc(100% + 120px); 
+            z-index: 1; opacity: 0; transition: opacity 0.3s ease; pointer-events: none;
+        }
+        
+        .yt-iframe-wrapper.active { opacity: 1; }
+        #youtube-player { width: 100%; height: 100%; }
+        
+        .video-preview {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 2; display: flex; align-items: center; justify-content: center;
+        }
+        .video-preview img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .buffering-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 3; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .buffering-spinner {
+            width: 70px; height: 70px; border: 4px solid rgba(255, 65, 108, 0.2);
+            border-radius: 50%; border-top-color: var(--pink); animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .bottom-ui { 
+            position: absolute; bottom: 0; left: 0; right: 0;
+            background: rgba(0,0,0,0.9); padding: 15px; backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 65, 108, 0.2); z-index: 10; opacity: 0; transition: opacity 0.3s ease;
+        }
+        
+        .player-content.show-ui .bottom-ui { opacity: 1; pointer-events: auto; }
+        .p-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.1); cursor: pointer; border-radius: 10px; margin-bottom: 12px; }
+        .p-fill { height: 100%; background: linear-gradient(90deg, #ff416c, #ff4b2b); width: 0%; border-radius: 10px; }
+        
+        .controls-row { display: flex; justify-content: space-between; align-items: center; }
+        .left-group { display: flex; align-items: center; gap: 15px; }
+        .icon-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .v-time { font-size: 13px; font-family: monospace; color: #eee; }
+        
+        .close-player-btn {
+            position: absolute; top: 10px; left: 10px; width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255, 65, 108, 0.3); border: 1px solid var(--pink);
+            color: white; cursor: pointer; z-index: 11; opacity: 0;
+        }
+        .player-content.show-ui .close-player-btn { opacity: 1; }
+
+        .footer { margin: 40px 0; padding: 20px; color: #555; font-size: 12px; }
+
+        @media (min-width: 768px) { 
+            .episode-grid { grid-template-columns: repeat(4, 1fr); }
+            :root { --header-height: 300px; } /* Desktop ke liye thori zyada height */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-poster">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT012V6rzCxt1b_ydWHgx5KOM2O20C2cdXG_Q&usqp=CAU" alt="Main Poster">
+        <div class="poster-overlay">
+            <h1>MUHABAT GUMSHUDA MERI</h1>
+            <p>HUM TV HD Serial • Premium Player</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="section-title">Select Episode</h2>
+        <div class="episode-grid" id="episodeGrid"></div>
+        <div class="footer">Powered By: 🩷~𝑺𝒚𝒆𝒅 𝑴𝒖𝒛𝒂𝒎𝒎𝒊𝒍 𝑺𝒉𝒂𝒉~🩷</div>
+    </div>
+
+    <div class="player-box" id="playerBox">
+        <div class="player-content" id="playerArea">
+            <div class="yt-iframe-wrapper" id="ytWrapper">
+                <div id="youtube-player"></div>
+            </div>
+            <div class="video-preview" id="videoPreview">
+                <img src="https://upload.wikimedia.org/wikipedia/en/9/9d/Tashan-e-Ishq_title_card.jpg">
+            </div>
+            <div class="buffering-screen" id="bufferingScreen">
+                <div class="buffering-spinner"></div>
+                <div style="color:var(--pink)">Buffring...</div>
+            </div>
+            <button class="close-player-btn" onclick="closePlayer()">✕</button>
+            <div style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:5;" onclick="toggleUI()"></div>
+            <div class="bottom-ui">
+                <div class="p-bar" id="progressBar" onclick="seek(event)">
+                    <div class="p-fill" id="pFill"></div>
+                </div>
+                <div class="controls-row">
+                    <div class="left-group">
+                        <button class="icon-btn" onclick="prevEp()">⏮</button>
+                        <button class="icon-btn" onclick="playPause()" id="playIcon">⏸</button>
+                        <button class="icon-btn" onclick="nextEp()">⏭</button>
+                        <span class="v-time"><span id="currTime">0:00</span> / <span id="totalTime">0:00</span></span>
+                    </div>
+                    <button class="icon-btn" onclick="toggleFullscreen()">⛶</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CUSTOM_THUMBNAIL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS9wPmOz4QWpUyUBXF-xC8FSJQyBYpkO2H2H3laenjUnAIhtzOxnLpHlN8&s=10";
+        const PLAYLIST_ID = 'PLbVdwtmx18svm9hCyqFrO-DRKz49Jjo2w';
+        const EPISODE_COUNT = 26;
+
+        let player, currentIdx = 0, hideTimeout;
+
+        function renderEpisodeButtons() {
+            const grid = document.getElementById('episodeGrid');
+            grid.innerHTML = ''; 
+            for (let i = 0; i < EPISODE_COUNT; i++) {
+                const card = document.createElement('div');
+                card.className = 'ep-card';
+                card.style.animationDelay = (i * 0.05) + 's';
+                card.onclick = () => openPlayer(i);
+                const displayNum = EPISODE_COUNT - i; 
+                card.innerHTML = `<div class="ep-upper"><img src="${CUSTOM_THUMBNAIL}"></div><div class="ep-lower"><h3>Episode ${displayNum}</h3></div>`;
+                grid.appendChild(card);
+            }
+        }
+
+        window.onload = () => {
+            renderEpisodeButtons();
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+        };
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('youtube-player', {
+                playerVars: { 'listType': 'playlist', 'list': PLAYLIST_ID, 'controls': 0, 'modestbranding': 1, 'rel': 0, 'disablekb': 1, 'showinfo': 0, 'iv_load_policy': 3, 'playsinline': 1 },
+                events: { 'onStateChange': onStateChange }
+            });
+            setInterval(updateProgress, 500);
+        }
+
+        function toggleUI() {
+            const el = document.getElementById('playerArea');
+            el.classList.toggle('show-ui');
+            clearTimeout(hideTimeout);
+            if(el.classList.contains('show-ui')) { hideTimeout = setTimeout(() => el.classList.remove('show-ui'), 4000); }
+        }
+
+        function openPlayer(i) {
+            currentIdx = i;
+            document.getElementById('playerBox').style.display = 'flex';
+            document.getElementById('bufferingScreen').style.display = 'flex';
+            if (player && player.loadPlaylist) { player.loadPlaylist({ list: PLAYLIST_ID, listType: 'playlist', index: i }); }
+            document.getElementById('playerArea').classList.add('show-ui');
+        }
+
+        function onStateChange(event) {
+            if (event.data === 1) { 
+                document.getElementById('bufferingScreen').style.display = 'none';
+                document.getElementById('videoPreview').style.display = 'none';
+                document.getElementById('ytWrapper').classList.add('active');
+                document.getElementById('playIcon').innerText = '⏸';
+            } else if (event.data === 2) { document.getElementById('playIcon').innerText = '▶'; }
+        }
+
+        function playPause() { if (player.getPlayerState() === 1) player.pauseVideo(); else player.playVideo(); }
+        function updateProgress() {
+            if (player && player.getCurrentTime) {
+                const curr = player.getCurrentTime(); const dur = player.getDuration();
+                if (dur > 0) {
+                    document.getElementById('pFill').style.width = (curr/dur*100) + '%';
+                    document.getElementById('currTime').innerText = format(curr);
+                    document.getElementById('totalTime').innerText = format(dur);
+                }
+            }
+        }
+        function format(s) { let m = Math.floor(s/60), sec = Math.floor(s%60); return m + ":" + (sec < 10 ? '0' : '') + sec; }
+        function seek(e) { const rect = document.getElementById('progressBar').getBoundingClientRect(); const pct = (e.clientX - rect.left) / rect.width; player.seekTo(pct * player.getDuration()); }
+        function closePlayer() { document.getElementById('playerBox').style.display = 'none'; player.stopVideo(); }
+        function nextEp() { if(currentIdx < EPISODE_COUNT-1) openPlayer(currentIdx+1); }
+        function prevEp() { if(currentIdx > 0) openPlayer(currentIdx-1); }
+        function toggleFullscreen() {
+            const el = document.getElementById('playerArea');
+            if (!document.fullscreenElement) { el.requestFullscreen().then(() => { if (screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(e => console.log(e)); } }); } 
+            else { document.exitFullscreen(); }
+        }
+    </script>
+</body>
+</html>
